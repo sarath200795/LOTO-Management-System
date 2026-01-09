@@ -18,22 +18,8 @@
             backdrop-filter: blur(12px); 
             border: 1px solid rgba(255, 255, 255, 0.08); 
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
         }
-        .glass-card:hover { 
-            background: rgba(255, 255, 255, 0.07); 
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-8px);
-        }
-        .badge {
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 9px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 9px; font-weight: 900; text-transform: uppercase; border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
 <body class="bg-mesh min-h-screen flex flex-col">
@@ -45,8 +31,7 @@
         </div>
         
         <div class="flex items-center gap-6">
-            <div id="admin-actions" class="flex gap-2">
-                </div>
+            <div id="admin-actions" class="flex gap-2"></div>
             <div class="text-right flex flex-col items-end gap-1 border-r border-white/10 pr-6 mr-2 hidden md:flex">
                 <div class="flex items-center gap-2">
                     <span id="org-display" class="badge bg-blue-500/10 text-blue-400 border-blue-500/30">ORG: --</span>
@@ -54,10 +39,9 @@
                 </div>
                 <p id="user-display" class="text-sm font-black uppercase tracking-tight text-white mt-1 italic"></p>
             </div>
-            
-            <button onclick="logout()" class="bg-white/5 border border-white/10 p-2.5 rounded-full hover:bg-red-600/20 hover:border-red-600/40 transition-all group shadow-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            <button onclick="logout()" class="bg-white/5 border border-white/10 p-2.5 rounded-full hover:bg-red-600/20 transition-all shadow-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
             </button>
         </div>
@@ -65,100 +49,113 @@
 
     <main class="flex-grow flex flex-col items-center justify-center px-6 py-12">
         <header class="text-center mb-16">
-            <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-red-600 mb-4 opacity-80"> Workplace LOTO Solution </h2>
             <h3 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter max-w-3xl leading-tight">Safety <span class="text-slate-500">Operation Center</span></h3>
         </header>
 
-        
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
-            
-            <div onclick="window.location.href='index.html'" class="glass-card p-10 rounded-[40px]">
-                <div class="w-14 h-14 bg-red-600/20 text-red-500 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                </div>
-                <h4 class="text-2xl font-black uppercase italic mb-3 tracking-tighter text-white">Generator</h4>
-                <p class="text-slate-500 text-xs font-bold leading-relaxed mb-6">Create new smart-indexed isolation procedures and energy tags.</p>
-                <span class="text-[8px] font-black uppercase text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/5 tracking-widest">Technician Access</span>
+            <div onclick="window.location.href='index.html'" class="glass-card p-10 rounded-[40px] cursor-pointer hover:bg-white/10">
+                <h4 class="text-2xl font-black uppercase italic mb-3 text-white">Generator</h4>
+                <p class="text-slate-500 text-xs font-bold">Create new isolation procedures.</p>
             </div>
-
-            <div onclick="window.location.href='inventory.html'" class="glass-card p-10 rounded-[40px]">
-                <div class="w-14 h-14 bg-blue-600/20 text-blue-500 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-                </div>
-                <h4 class="text-2xl font-black uppercase italic mb-3 tracking-tighter text-white">Inventory</h4>
-                <p class="text-slate-500 text-xs font-bold leading-relaxed mb-6">Access approved archives and authorize pending draft procedures.</p>
-                <span class="text-[8px] font-black uppercase text-blue-400 bg-blue-400/5 px-3 py-1 rounded-full border border-blue-400/10 tracking-widest">Review & Sync</span>
+            <div onclick="window.location.href='inventory.html'" class="glass-card p-10 rounded-[40px] cursor-pointer hover:bg-white/10">
+                <h4 class="text-2xl font-black uppercase italic mb-3 text-white">Inventory</h4>
+                <p class="text-slate-500 text-xs font-bold">Access approved archives.</p>
             </div>
-
-            <div id="dash-card" onclick="handleAdmin('dashboard.html')" class="glass-card p-10 rounded-[40px] opacity-40 grayscale">
-                <div class="w-14 h-14 bg-green-600/20 text-green-500 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                </div>
-                <h4 class="text-2xl font-black uppercase italic mb-3 tracking-tighter text-white">Analytics</h4>
-                <p class="text-slate-500 text-xs font-bold leading-relaxed mb-6">Audit facility safety data and manage personnel credentials.</p>
-                <span id="dash-lock" class="text-[8px] font-black uppercase text-red-500 bg-red-500/5 px-3 py-1 rounded-full border border-red-500/10 tracking-widest italic">Restricted</span>
+            <div id="dash-card" onclick="handleAdmin('dashboard.html')" class="glass-card p-10 rounded-[40px] opacity-40 grayscale cursor-pointer">
+                <h4 class="text-2xl font-black uppercase italic mb-3 text-white">Analytics</h4>
+                <p class="text-slate-500 text-xs font-bold">Audit facility safety data.</p>
+                <span id="dash-lock" class="text-[8px] font-black uppercase text-red-500 bg-red-500/5 px-3 py-1 rounded-full border border-red-500/10 italic">Restricted</span>
             </div>
-
         </div>
     </main>
 
-    <footer class="p-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-950/40">
-        <p class="text-[9px] font-black text-slate-700 uppercase tracking-[0.3em]">LOTO PRO ENTERPRISE // GLOBAL CLOUD</p>
-        <div class="flex gap-8">
-            <a href="privacy.html" class="text-[10px] font-black text-slate-500 uppercase hover:text-white transition-all">Privacy Policy</a>
-            <a href="mailto:support@lotopro.com" class="text-[10px] font-black text-red-900 uppercase tracking-widest hover:text-red-500 transition-all">Cloud Helpdesk</a>
+    <div id="secure-admin-overlay" class="fixed inset-0 bg-slate-950/95 backdrop-blur-2xl z-[100] hidden flex items-center justify-center p-6">
+        <div class="glass-card w-full max-w-2xl p-10 rounded-[40px] border border-red-600/30 shadow-2xl">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-black italic uppercase">Access <span class="text-red-600">Requests</span></h2>
+                <button onclick="document.getElementById('secure-admin-overlay').classList.add('hidden')" class="text-slate-500 hover:text-white font-black">CLOSE</button>
+            </div>
+            <div id="secure-pending-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2"></div>
         </div>
-    </footer>
+    </div>
 
     <script>
+        const SUPER_PIN = "1234"; // CHANGE THIS PIN
+        const DB_URL = "https://loto-pro-f7417-default-rtdb.firebaseio.com";
+
+        async function openSecureOwnerPanel() {
+            const challenge = prompt("ENTER SUPER-OWNER PIN:");
+            if (challenge !== SUPER_PIN) { alert("UNAUTHORIZED"); return; }
+
+            const list = document.getElementById('secure-pending-list');
+            const orgId = sessionStorage.getItem("loto_org_id");
+            document.getElementById('secure-admin-overlay').classList.remove('hidden');
+            list.innerHTML = '<p class="text-center text-xs py-10">Syncing...</p>';
+
+            try {
+                const res = await fetch(`${DB_URL}/system_audit/pending.json`);
+                const data = await res.json();
+                list.innerHTML = '';
+                if(!data) { list.innerHTML = '<p class="text-center text-xs text-slate-500 py-10">No requests</p>'; return; }
+
+                Object.keys(data).forEach(key => {
+                    if (data[key].orgId === orgId) {
+                        list.innerHTML += `
+                            <div class="p-4 bg-white/5 border border-white/10 rounded-2xl flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs font-black uppercase">${data[key].name}</p>
+                                    <p class="text-[9px] text-slate-500 font-bold uppercase">${data[key].email} | ${data[key].role}</p>
+                                </div>
+                                <button onclick="approveUser('${key}')" class="bg-red-600 text-white text-[9px] font-black px-4 py-2 rounded-lg">Authorize</button>
+                            </div>`;
+                    }
+                });
+            } catch(e) { list.innerHTML = '<p class="text-center text-red-500 text-xs">Error</p>'; }
+        }
+
+        async function approveUser(key) {
+            const res = await fetch(`${DB_URL}/system_audit/pending/${key}.json`);
+            const u = await res.json();
+            u.isAuthorized = true;
+            await fetch(`${DB_URL}/${u.orgId}/users.json`, { method: 'POST', body: JSON.stringify(u) });
+            await fetch(`${DB_URL}/system_audit/pending/${key}.json`, { method: 'DELETE' });
+            openSecureOwnerPanel();
+        }
+
         window.onload = () => {
-            // Retrieve session data
             const name = sessionStorage.getItem("loto_user_name");
             const org = sessionStorage.getItem("loto_org_id");
             const role = sessionStorage.getItem("loto_user_role");
 
-            // Populate UI
             document.getElementById('user-display').innerText = name || "Unidentified User";
-            document.getElementById('org-display').innerText = `ORG: ${org || 'None'}`;
-            document.getElementById('role-display').innerText = `ROLE: ${role || 'User'}`;
+            document.getElementById('org-display').innerText = `ORG: ${org}`;
+            document.getElementById('role-display').innerText = `ROLE: ${role}`;
 
-            // Inject Admin Button if user is Owner
             if (role === 'Owner') {
                 const adminDiv = document.getElementById('admin-actions');
-                const userBtn = document.createElement('button');
-                userBtn.className = "bg-blue-600/10 text-blue-400 border border-blue-400/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-tighter hover:bg-blue-600/20 transition-all";
-                userBtn.innerText = "Manage Staff";
-                userBtn.onclick = () => window.location.href = 'users.html';
-                adminDiv.appendChild(userBtn);
+                const ownerBtn = document.createElement('button');
+                ownerBtn.className = "bg-red-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-tighter hover:bg-red-700 transition-all shadow-lg shadow-red-600/20";
+                ownerBtn.innerText = "Owner Panel";
+                ownerBtn.onclick = openSecureOwnerPanel;
+                adminDiv.appendChild(ownerBtn);
             }
 
-            // Handle Dashboard Permissions Visuals
             if (role === 'Manager' || role === 'Owner') {
                 const dash = document.getElementById('dash-card');
                 const lock = document.getElementById('dash-lock');
                 dash.classList.remove('opacity-40', 'grayscale');
                 lock.innerText = "Authorized";
                 lock.classList.replace('text-red-500', 'text-green-500');
-                lock.classList.replace('bg-red-500/5', 'bg-green-500/5');
             }
         };
 
         function handleAdmin(path) {
             const role = sessionStorage.getItem("loto_user_role");
-            if (role === 'Manager' || role === 'Owner') {
-                window.location.href = path;
-            } else {
-                alert("ACCESS DENIED: Your current role (" + role + ") is restricted from viewing Analytics.");
-            }
+            if (role === 'Manager' || role === 'Owner') { window.location.href = path; } 
+            else { alert("ACCESS DENIED"); }
         }
 
-        function logout() {
-            if (confirm("Terminate cloud session and logout?")) {
-                sessionStorage.clear();
-                window.location.href = 'auth.html';
-            }
-        }
+        function logout() { if (confirm("Logout?")) { sessionStorage.clear(); window.location.href = 'auth.html'; } }
     </script>
 </body>
 </html>
