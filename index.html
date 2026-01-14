@@ -21,13 +21,10 @@
 </head>
 <body class="p-4">
     <nav class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
-        <h1 class="text-lg font-black italic uppercase">LOTO<span class="text-red-600">PRO</span> ENGINE</h1>
-	<nav class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
-    	<div onclick="window.location.href='home.html'" class="cursor-pointer flex items-center gap-2">
-        <div class="w-6 h-6 bg-red-600 rounded flex items-center justify-center font-black text-white text-[10px]">LP</div>
-        <h1 class="text-lg font-black italic uppercase">LOTO<span class="text-red-600">PRO</span></h1>
-    </div>
-    </nav>
+        <div onclick="window.location.href='home.html'" class="cursor-pointer flex items-center gap-2">
+            <div class="w-6 h-6 bg-red-600 rounded flex items-center justify-center font-black text-white text-[10px]">LP</div>
+            <h1 class="text-lg font-black italic uppercase">LOTO<span class="text-red-600">PRO</span></h1>
+        </div>
         <div class="flex gap-2">
             <button onclick="resetEngine()" class="text-[10px] border border-white/10 px-4 py-2 rounded-full font-black uppercase">Reset</button>
             <button onclick="window.location.href='inventory.html'" class="text-[10px] text-blue-400 border border-blue-400/20 px-4 py-2 rounded-full font-black uppercase">Inventory</button>
@@ -180,7 +177,11 @@
             const location = document.getElementById('location').value.toUpperCase();
             const equip = document.getElementById('description').value.toUpperCase();
             const date = document.getElementById('revisedDate').value;
-            const qrData = new QRious({ value: currentID, size: 250 }).toDataURL();
+            
+            // INTEGRATED SCAN LOGIC: QR points to your GitHub Pages URL
+            const orgId = sessionStorage.getItem("loto_org_id");
+            const scanUrl = `https://sarath200795.github.io/LOTO-Management-System/view.html?org=${orgId}&id=${currentID}`;
+            const qrData = new QRious({ value: scanUrl, size: 250 }).toDataURL();
 
             const steps = [];
             const lockCounts = {};
@@ -215,17 +216,14 @@
             doc.setTextColor(255); doc.setFontSize(22); doc.setFont("helvetica", "bold");
             doc.text("LOTO POSTED PROCEDURE", 10, 15);
             
-            // Fixed QR Code Overlap
             doc.setFillColor(255); doc.rect(174, 4, 32, 32, 'F');
             doc.addImage(qrData, 'PNG', 175, 5, 30, 30);
 
-            // Metadata Bar
             doc.setFillColor(245, 245, 245); doc.rect(5, 28, 165, 18, 'F');
             doc.setTextColor(0); doc.setFontSize(8);
             doc.text(`SITE: ${facility} | LOC: ${location}`, 8, 34);
             doc.text(`EQUIP: ${equip} | ID: ${currentID}`, 8, 40);
 
-            // Resource Summary Table
             let energyTxt = "ENERGY SOURCES: " + Object.entries(energyCounts).map(([k,v])=>`${k}(${v})`).join(', ');
             let locksTxt = "HARDWARE REQUIRED: " + Object.entries(lockCounts).map(([k,v])=>`${k} x${v}`).join(', ');
 
@@ -237,7 +235,6 @@
                 headStyles: { fillColor: [220, 38, 38] }
             });
 
-            // Isolation Table
             doc.autoTable({
                 startY: doc.lastAutoTable.finalY + 5,
                 head: [['TAG', 'ISOLATION & HARDWARE', 'PHOTO', 'VERIFY']],
@@ -251,7 +248,6 @@
                 }
             });
 
-            // PAGE 2: SEQUENCES
             doc.addPage();
             doc.setFillColor(185, 28, 28); doc.rect(0, 0, 210, 20, 'F');
             doc.setTextColor(255); doc.setFontSize(14); doc.text("OSHA 1910.147 COMPLIANCE SEQUENCES", 105, 13, {align:'center'});
@@ -269,7 +265,6 @@
                 headStyles: { fillColor: [30, 41, 59] }
             });
 
-            // PAGE 3: TAGS
             doc.addPage();
             renderTagsPage(doc, steps, equip, qrData);
             doc.save(`${currentID}_PROCEDURE.pdf`);
@@ -312,7 +307,6 @@
                     data.steps.forEach(s => addNewPoint(s));
                     updateID();
 
-                    // --- THE HANDSHAKE FIX ---
                     if(sessionStorage.getItem('auto_print_full')) {
                         sessionStorage.removeItem('auto_print_full');
                         setTimeout(() => generatePDF(false), 1500);
