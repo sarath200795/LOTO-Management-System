@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOTO View - Mobile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white p-4">
+    <div id="loading" class="text-center py-10 uppercase font-black text-xs animate-pulse">Syncing Procedure...</div>
+    
+    <div id="content" class="hidden space-y-4">
+        <h1 id="title" class="text-2xl font-black italic uppercase italic text-red-500"></h1>
+        <p id="meta" class="text-[10px] font-bold text-slate-400 uppercase border-b border-white/10 pb-2"></p>
+        
+        <div id="steps-container" class="space-y-4"></div>
+    </div>
+
+    <script>
+        const DB_BASE = "https://loto-pro-f7417-default-rtdb.firebaseio.com";
+        const urlParams = new URLSearchParams(window.location.search);
+        const procId = urlParams.get('id');
+
+        async function loadProcedure() {
+            // Note: Since this is a public viewer, you need to know which orgId it belongs to. 
+            // Often this is hardcoded or part of the QR URL.
+            const orgId = "YOUR_ORG_ID"; 
+
+            try {
+                const res = await fetch(`${DB_BASE}/${orgId}/inventory/approved/${procId}.json`);
+                const data = await res.json();
+                
+                if(!data) throw "Not Found";
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('content').classList.remove('hidden');
+                
+                document.getElementById('title').innerText = data.description;
+                document.getElementById('meta').innerText = `ID: ${data.id} | Site: ${data.facility}`;
+
+                data.steps.forEach((s, i) => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = "p-4 bg-white/5 rounded-xl border border-white/10";
+                    stepDiv.innerHTML = `
+                        <p class="text-[9px] font-black text-red-500 mb-1 uppercase">Step ${i+1}: ${s.type}</p>
+                        <p class="text-sm font-bold">${s.isolate}</p>
+                        <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase italic text-blue-400">Verify: ${s.verify}</p>
+                    `;
+                    document.getElementById('steps-container').appendChild(stepDiv);
+                });
+            } catch (e) {
+                document.getElementById('loading').innerText = "PROCEDURE NOT FOUND";
+            }
+        }
+        loadProcedure();
+    </script>
+</body>
+</html>
