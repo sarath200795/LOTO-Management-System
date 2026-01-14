@@ -52,12 +52,19 @@
         const CLOUD_URL = "https://loto-pro-f7417-default-rtdb.firebaseio.com";
         let uniqueIdCounter = 0, imageDataStore = {}, currentID = "";
 
+        // UPDATED: Complete Energy Source Configuration
         const energyConfig = {
-            "Electrical": { code: "E", bg: [185, 28, 28] }, "Mechanical": { code: "M", bg: [30, 64, 175] },
-            "Pneumatic": { code: "PN", bg: [8, 145, 178] }, "Hydraulic": { code: "H", bg: [194, 65, 12] },
-            "Chemical": { code: "C", bg: [21, 128, 61] }, "Gas": { code: "G", bg: [71, 85, 105] },
-            "Thermal": { code: "T", bg: [234, 88, 12] }, "Gravity": { code: "GR", bg: [126, 34, 206] },
-            "Water/Steam": { code: "W", bg: [37, 99, 235] }
+            "Electrical": { code: "E", bg: [185, 28, 28] },
+            "Mechanical": { code: "M", bg: [30, 64, 175] },
+            "Pneumatic": { code: "PN", bg: [8, 145, 178] },
+            "Hydraulic": { code: "H", bg: [194, 65, 12] },
+            "Chemical": { code: "C", bg: [21, 128, 61] },
+            "Gas": { code: "G", bg: [71, 85, 105] },
+            "Thermal": { code: "T", bg: [234, 88, 12] },
+            "Gravity": { code: "GR", bg: [126, 34, 206] },
+            "Water/Steam": { code: "W", bg: [37, 99, 235] },
+            "Radiation": { code: "R", bg: [251, 191, 36] },
+            "Magnetic": { code: "MG", bg: [100, 116, 139] }
         };
 
         const hardwareOptions = ["Safety Padlock", "Lockout Hasp", "Breaker Lock", "Ball Valve Lock", "Gate Valve Lock", "Plug Cover", "Cable Lockout", "Pneumatic Lock", "Flange Blind", "Chain/Cable"];
@@ -178,7 +185,6 @@
             const equip = document.getElementById('description').value.toUpperCase();
             const date = document.getElementById('revisedDate').value;
             
-            // INTEGRATED SCAN LOGIC: QR points to your GitHub Pages URL
             const orgId = sessionStorage.getItem("loto_org_id");
             const scanUrl = `https://sarath200795.github.io/LOTO-Management-System/view.html?org=${orgId}&id=${currentID}`;
             const qrData = new QRious({ value: scanUrl, size: 250 }).toDataURL();
@@ -211,7 +217,6 @@
                 return;
             }
 
-            // --- PAGE 1: HEADER & RESOURCE SUMMARY ---
             doc.setFillColor(15, 23, 42); doc.rect(0, 0, 210, 40, 'F');
             doc.setTextColor(255); doc.setFontSize(22); doc.setFont("helvetica", "bold");
             doc.text("LOTO POSTED PROCEDURE", 10, 15);
