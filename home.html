@@ -35,6 +35,12 @@
             letter-spacing: 1px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        /* Notification Panel for Approvals */
+        .alert-panel {
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            backdrop-filter: blur(10px);
+        }
         /* Scanner Styles */
         #scanner-modal {
             display: none;
@@ -85,10 +91,24 @@
     </nav>
 
     <main class="flex-grow flex flex-col items-center justify-center px-6 py-12">
-        <header class="text-center mb-16">
+        <header class="text-center mb-10">
             <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-red-600 mb-4 opacity-80"> Workplace LOTO Solution </h2>
             <h3 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter max-w-3xl leading-tight">Safety <span class="text-slate-500">Operation Center</span></h3>
         </header>
+
+        <div id="pending-alert-container" class="hidden w-full max-w-[1400px] mb-8">
+            <div class="alert-panel p-6 rounded-[24px] w-full shadow-2xl shadow-orange-500/10 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-orange-500"></div>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                        <h2 class="text-sm font-black uppercase tracking-[0.2em] text-orange-400">Pending Staff Approvals</h2>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Action Required by Manager/Owner</span>
+                </div>
+                <div id="pending-users-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[1400px] w-full">
             
@@ -151,6 +171,7 @@
     </footer>
 
     <script>
+        const DB_BASE = "https://loto-pro-f7417-default-rtdb.firebaseio.com";
         let html5QrcodeScanner = null;
 
         window.onload = () => {
@@ -162,6 +183,7 @@
             document.getElementById('org-display').innerText = `ORG: ${org || 'None'}`;
             document.getElementById('role-display').innerText = `ROLE: ${role || 'User'}`;
 
+            // Inject Admin Button if Owner
             if (role === 'Owner') {
                 const adminDiv = document.getElementById('admin-actions');
                 const userBtn = document.createElement('button');
@@ -171,6 +193,7 @@
                 adminDiv.appendChild(userBtn);
             }
 
+            // Dashboard Permissions
             if (role === 'Manager' || role === 'Owner') {
                 const dash = document.getElementById('dash-card');
                 const lock = document.getElementById('dash-lock');
@@ -178,8 +201,85 @@
                 lock.innerText = "Authorized";
                 lock.classList.replace('text-red-500', 'text-green-500');
                 lock.classList.replace('bg-red-500/5', 'bg-green-500/5');
+
+                // Trigger Notification Check
+                checkPendingUsers(org);
             }
         };
+
+        // --- APPROVAL LOGIC ---
+        
+        async function checkPendingUsers(orgId) {
+            try {
+                const res = await fetch(`${DB_BASE}/${orgId}/users.json`);
+                const data = await res.json();
+                
+                if (!data) return;
+
+                const pendingList = document.getElementById('pending-users-list');
+                const container = document.getElementById('pending-alert-container');
+                let hasPending = false;
+
+                pendingList.innerHTML = ''; // Clear previous
+
+                Object.entries(data).forEach(([key, user]) => {
+                    if (!user.isAuthorized) {
+                        hasPending = true;
+                        const card = document.createElement('div');
+                        card.className = "bg-slate-900/50 p-4 rounded-xl border border-white/5 flex flex-col gap-2";
+                        card.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-sm font-black italic text-white uppercase">${user.name}</h3>
+                                <span class="text-[8px] bg-slate-700 text-slate-300 px-2 py-1 rounded font-bold uppercase">${user.role}</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 font-mono mb-2">${user.email}</p>
+                            <div class="flex gap-2">
+                                <button onclick="approveUser('${key}', '${user.role}')" class="flex-1 bg-green-600 hover:bg-green-500 text-white text-[9px] font-black uppercase py-2 rounded-lg transition">Accept</button>
+                                <button onclick="rejectUser('${key}')" class="flex-1 bg-white/5 hover:bg-red-900/40 text-slate-400 hover:text-red-500 text-[9px] font-black uppercase py-2 rounded-lg transition border border-white/5">Decline</button>
+                            </div>
+                        `;
+                        pendingList.appendChild(card);
+                    }
+                });
+
+                if (hasPending) {
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                }
+
+            } catch (error) {
+                console.error("Error fetching users:", error);
+            }
+        }
+
+        async function approveUser(key, role) {
+            if(!confirm("Authorize this user?")) return;
+            const orgId = sessionStorage.getItem("loto_org_id");
+            
+            // 1. Fetch current data
+            const res = await fetch(`${DB_BASE}/${orgId}/users/${key}.json`);
+            const userData = await res.json();
+            
+            // 2. Update status
+            await fetch(`${DB_BASE}/${orgId}/users/${key}.json`, { 
+                method: 'PUT', 
+                body: JSON.stringify({ ...userData, isAuthorized: true }) 
+            });
+
+            // 3. Refresh UI
+            checkPendingUsers(orgId);
+        }
+
+        async function rejectUser(key) {
+            if(!confirm("Permanently decline and remove this request?")) return;
+            const orgId = sessionStorage.getItem("loto_org_id");
+            await fetch(`${DB_BASE}/${orgId}/users/${key}.json`, { method: 'DELETE' });
+            checkPendingUsers(orgId);
+        }
+
+
+        // --- NAVIGATION LOGIC ---
 
         function handleAdmin(path) {
             const role = sessionStorage.getItem("loto_user_role");
@@ -197,7 +297,7 @@
             }
         }
 
-        // --- INTELLIGENT SCANNER LOGIC ---
+        // --- SCANNER LOGIC ---
 
         function startScanner() {
             document.getElementById('scanner-modal').style.display = 'flex';
@@ -210,34 +310,22 @@
         function onScanSuccess(decodedText, decodedResult) {
             stopScanner();
             
-            // Logic to Identify Approved Procedure
-            // 1. We default to the current user's organization session.
             let targetOrg = sessionStorage.getItem("loto_org_id");
             let targetId = decodedText;
 
             try {
-                // 2. Check if the scanned text is a URL (e.g., from a printed PDF)
-                // If it is, we strip the domain and extract the ID/Org to force it to open
-                // in *this* current application instance (view.html) rather than external links.
                 const url = new URL(decodedText);
                 const urlParams = new URLSearchParams(url.search);
-                
                 if (urlParams.has('id')) targetId = urlParams.get('id');
                 if (urlParams.has('org')) targetOrg = urlParams.get('org');
-                
             } catch (e) {
-                // Not a URL? That's fine. It's likely a raw ID (e.g., "SITE-LOC-001").
-                // We will use the targetId as is.
                 console.log("Scanned format detected: Raw ID");
             }
 
             if(!targetId || !targetOrg) {
-                alert("Error: Procedure ID or Organization could not be identified from this QR code.");
+                alert("Error: Procedure ID or Organization could not be identified.");
                 return;
             }
-
-            // 3. Redirect to the View Page. 
-            // The View Page is responsible for fetching the "Approved" JSON for this ID.
             window.location.href = `view.html?org=${targetOrg}&id=${targetId}`;
         }
 
