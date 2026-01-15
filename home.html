@@ -6,6 +6,7 @@
     <title>Mission Control - LOTO PRO</title>
     <script src="guard.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; overflow-x: hidden; }
@@ -34,11 +35,31 @@
             letter-spacing: 1px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        /* Scanner Styles */
+        #scanner-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 50px rgba(59, 130, 246, 0.2);
+        }
     </style>
 </head>
 <body class="bg-mesh min-h-screen flex flex-col">
 
-    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto w-full border-b border-white/5 bg-slate-950/20 backdrop-blur-sm sticky top-0 z-50">
+    <nav class="p-6 flex justify-between items-center max-w-[1400px] mx-auto w-full border-b border-white/5 bg-slate-950/20 backdrop-blur-sm sticky top-0 z-50">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center font-black italic shadow-lg shadow-red-600/20">LP</div>
             <h1 class="text-xl font-black italic uppercase tracking-tighter">LOTO<span class="text-red-600">PRO</span></h1>
@@ -46,7 +67,7 @@
         
         <div class="flex items-center gap-6">
             <div id="admin-actions" class="flex gap-2">
-                </div>
+            </div>
             <div class="text-right flex flex-col items-end gap-1 border-r border-white/10 pr-6 mr-2 hidden md:flex">
                 <div class="flex items-center gap-2">
                     <span id="org-display" class="badge bg-blue-500/10 text-blue-400 border-blue-500/30">ORG: --</span>
@@ -69,39 +90,57 @@
             <h3 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter max-w-3xl leading-tight">Safety <span class="text-slate-500">Operation Center</span></h3>
         </header>
 
-        
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[1400px] w-full">
             
-            <div onclick="window.location.href='index.html'" class="glass-card p-10 rounded-[40px]">
-                <div class="w-14 h-14 bg-red-600/20 text-red-500 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            <div onclick="window.location.href='index.html'" class="glass-card p-8 rounded-[32px]">
+                <div class="w-12 h-12 bg-red-600/20 text-red-500 rounded-xl flex items-center justify-center mb-6 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                 </div>
-                <h4 class="text-2xl font-black uppercase italic mb-3 tracking-tighter text-white">Generator</h4>
-                <p class="text-slate-500 text-xs font-bold leading-relaxed mb-6">Create new smart-indexed isolation procedures and energy tags.</p>
-                <span class="text-[8px] font-black uppercase text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/5 tracking-widest">Technician Access</span>
+                <h4 class="text-xl font-black uppercase italic mb-2 tracking-tighter text-white">Generator</h4>
+                <p class="text-slate-500 text-[10px] font-bold leading-relaxed mb-4">Create new smart-indexed isolation procedures.</p>
+                <span class="text-[8px] font-black uppercase text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/5 tracking-widest">Technician</span>
             </div>
 
-            <div onclick="window.location.href='inventory.html'" class="glass-card p-10 rounded-[40px]">
-                <div class="w-14 h-14 bg-blue-600/20 text-blue-500 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+            <div onclick="startScanner()" class="glass-card p-8 rounded-[32px] group">
+                <div class="w-12 h-12 bg-purple-600/20 text-purple-500 rounded-xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-purple-600/30 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4h-4v-4H8m13-4V7a1 1 0 00-1-1H4a1 1 0 00-1 1v3M4 7h16" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h5v5H3V3zm13 0h5v5h-5V3zm0 13h5v5h-5v-5zM3 16h5v5H3v-5z" />
+                    </svg>
                 </div>
-                <h4 class="text-2xl font-black uppercase italic mb-3 tracking-tighter text-white">Inventory</h4>
-                <p class="text-slate-500 text-xs font-bold leading-relaxed mb-6">Access approved archives and authorize pending draft procedures.</p>
-                <span class="text-[8px] font-black uppercase text-blue-400 bg-blue-400/5 px-3 py-1 rounded-full border border-blue-400/10 tracking-widest">Review & Sync</span>
+                <h4 class="text-xl font-black uppercase italic mb-2 tracking-tighter text-white">Find Proc</h4>
+                <p class="text-slate-500 text-[10px] font-bold leading-relaxed mb-4">Scan QR code to locate and view approved procedures.</p>
+                <span class="text-[8px] font-black uppercase text-purple-400 bg-purple-400/5 px-3 py-1 rounded-full border border-purple-400/10 tracking-widest">Quick Scan</span>
             </div>
 
-            <div id="dash-card" onclick="handleAdmin('dashboard.html')" class="glass-card p-10 rounded-[40px] opacity-40 grayscale">
-                <div class="w-14 h-14 bg-green-600/20 text-green-500 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+            <div onclick="window.location.href='inventory.html'" class="glass-card p-8 rounded-[32px]">
+                <div class="w-12 h-12 bg-blue-600/20 text-blue-500 rounded-xl flex items-center justify-center mb-6 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
                 </div>
-                <h4 class="text-2xl font-black uppercase italic mb-3 tracking-tighter text-white">Analytics</h4>
-                <p class="text-slate-500 text-xs font-bold leading-relaxed mb-6">Audit facility safety data and manage personnel credentials.</p>
+                <h4 class="text-xl font-black uppercase italic mb-2 tracking-tighter text-white">Inventory</h4>
+                <p class="text-slate-500 text-[10px] font-bold leading-relaxed mb-4">Access archives and authorize pending drafts.</p>
+                <span class="text-[8px] font-black uppercase text-blue-400 bg-blue-400/5 px-3 py-1 rounded-full border border-blue-400/10 tracking-widest">Review</span>
+            </div>
+
+            <div id="dash-card" onclick="handleAdmin('dashboard.html')" class="glass-card p-8 rounded-[32px] opacity-40 grayscale">
+                <div class="w-12 h-12 bg-green-600/20 text-green-500 rounded-xl flex items-center justify-center mb-6 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                </div>
+                <h4 class="text-xl font-black uppercase italic mb-2 tracking-tighter text-white">Analytics</h4>
+                <p class="text-slate-500 text-[10px] font-bold leading-relaxed mb-4">Audit facility data and manage personnel.</p>
                 <span id="dash-lock" class="text-[8px] font-black uppercase text-red-500 bg-red-500/5 px-3 py-1 rounded-full border border-red-500/10 tracking-widest italic">Restricted</span>
             </div>
 
         </div>
     </main>
+
+    <div id="scanner-modal">
+        <div class="flex flex-col items-center gap-6 w-full px-4">
+            <h2 class="text-2xl font-black italic uppercase text-white tracking-widest">Scanning...</h2>
+            <div id="reader"></div>
+            <button onclick="stopScanner()" class="bg-red-600 text-white font-bold py-3 px-8 rounded-full uppercase text-xs tracking-widest hover:bg-red-700 transition">Close Scanner</button>
+        </div>
+    </div>
 
     <footer class="p-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-950/40">
         <p class="text-[9px] font-black text-slate-700 uppercase tracking-[0.3em]">LOTO PRO ENTERPRISE // GLOBAL CLOUD</p>
@@ -112,18 +151,17 @@
     </footer>
 
     <script>
+        let html5QrcodeScanner = null;
+
         window.onload = () => {
-            // Retrieve session data
             const name = sessionStorage.getItem("loto_user_name");
             const org = sessionStorage.getItem("loto_org_id");
             const role = sessionStorage.getItem("loto_user_role");
 
-            // Populate UI
             document.getElementById('user-display').innerText = name || "Unidentified User";
             document.getElementById('org-display').innerText = `ORG: ${org || 'None'}`;
             document.getElementById('role-display').innerText = `ROLE: ${role || 'User'}`;
 
-            // Inject Admin Button if user is Owner
             if (role === 'Owner') {
                 const adminDiv = document.getElementById('admin-actions');
                 const userBtn = document.createElement('button');
@@ -133,7 +171,6 @@
                 adminDiv.appendChild(userBtn);
             }
 
-            // Handle Dashboard Permissions Visuals
             if (role === 'Manager' || role === 'Owner') {
                 const dash = document.getElementById('dash-card');
                 const lock = document.getElementById('dash-lock');
@@ -157,6 +194,61 @@
             if (confirm("Terminate cloud session and logout?")) {
                 sessionStorage.clear();
                 window.location.href = 'auth.html';
+            }
+        }
+
+        // --- INTELLIGENT SCANNER LOGIC ---
+
+        function startScanner() {
+            document.getElementById('scanner-modal').style.display = 'flex';
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            html5QrcodeScanner.start({ facingMode: "environment" }, config, onScanSuccess)
+                .catch(err => { alert("Camera error: " + err); stopScanner(); });
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            stopScanner();
+            
+            // Logic to Identify Approved Procedure
+            // 1. We default to the current user's organization session.
+            let targetOrg = sessionStorage.getItem("loto_org_id");
+            let targetId = decodedText;
+
+            try {
+                // 2. Check if the scanned text is a URL (e.g., from a printed PDF)
+                // If it is, we strip the domain and extract the ID/Org to force it to open
+                // in *this* current application instance (view.html) rather than external links.
+                const url = new URL(decodedText);
+                const urlParams = new URLSearchParams(url.search);
+                
+                if (urlParams.has('id')) targetId = urlParams.get('id');
+                if (urlParams.has('org')) targetOrg = urlParams.get('org');
+                
+            } catch (e) {
+                // Not a URL? That's fine. It's likely a raw ID (e.g., "SITE-LOC-001").
+                // We will use the targetId as is.
+                console.log("Scanned format detected: Raw ID");
+            }
+
+            if(!targetId || !targetOrg) {
+                alert("Error: Procedure ID or Organization could not be identified from this QR code.");
+                return;
+            }
+
+            // 3. Redirect to the View Page. 
+            // The View Page is responsible for fetching the "Approved" JSON for this ID.
+            window.location.href = `view.html?org=${targetOrg}&id=${targetId}`;
+        }
+
+        function stopScanner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    html5QrcodeScanner.clear();
+                    document.getElementById('scanner-modal').style.display = 'none';
+                }).catch(err => document.getElementById('scanner-modal').style.display = 'none');
+            } else {
+                document.getElementById('scanner-modal').style.display = 'none';
             }
         }
     </script>
