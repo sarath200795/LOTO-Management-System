@@ -5,53 +5,160 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LOTO View - Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; }
+        .glass-panel { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+    </style>
 </head>
-<body class="bg-slate-900 text-white p-4">
-    <div id="loading" class="text-center py-10 uppercase font-black text-xs animate-pulse">Syncing Procedure...</div>
+<body class="p-4 min-h-screen flex flex-col items-center">
     
-    <div id="content" class="hidden space-y-4">
-        <h1 id="title" class="text-2xl font-black italic uppercase italic text-red-500"></h1>
-        <p id="meta" class="text-[10px] font-bold text-slate-400 uppercase border-b border-white/10 pb-2"></p>
+    <div class="w-full max-w-md flex justify-between items-center border-b border-white/10 pb-4 mb-6">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-red-600 rounded flex items-center justify-center font-black text-white text-[10px]">LP</div>
+            <h1 class="text-lg font-black italic uppercase">LOTO<span class="text-red-600">PRO</span></h1>
+        </div>
+        <div class="text-[8px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-2 py-1 rounded">Read-Only View</div>
+    </div>
+
+    <div id="loading" class="text-center py-20 w-full">
+        <div class="animate-spin h-8 w-8 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p class="uppercase font-black text-xs animate-pulse tracking-widest text-slate-400">Retrieving Secure Data...</p>
+    </div>
+    
+    <div id="content" class="hidden w-full max-w-md space-y-6 pb-20">
         
-        <div id="steps-container" class="space-y-4"></div>
+        <div class="glass-panel p-6 rounded-2xl shadow-2xl">
+            <p id="proc-id" class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">ID: --</p>
+            <h1 id="title" class="text-2xl font-black italic uppercase text-white leading-tight mb-4"></h1>
+            <div class="flex flex-wrap gap-2">
+                <span id="site-badge" class="px-3 py-1 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-lg text-[9px] font-bold uppercase"></span>
+                <span id="date-badge" class="px-3 py-1 bg-slate-700/30 text-slate-400 border border-white/10 rounded-lg text-[9px] font-bold uppercase"></span>
+            </div>
+        </div>
+
+        <div id="steps-container" class="space-y-6"></div>
+
+        <div class="text-center pt-8 border-t border-white/5">
+            <p class="text-[8px] text-slate-600 uppercase font-bold tracking-widest">Authorized by LOTO PRO Cloud</p>
+        </div>
+    </div>
+
+    <div id="error-msg" class="hidden text-center py-20 w-full max-w-md">
+        <div class="w-16 h-16 bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        </div>
+        <h2 class="text-xl font-black text-white uppercase mb-2">Procedure Not Found</h2>
+        <p class="text-xs text-slate-400 font-bold max-w-xs mx-auto">The ID or Organization key provided is invalid or the procedure has not been approved yet.</p>
+        <button onclick="window.location.href='index.html'" class="mt-8 bg-white text-black font-black uppercase text-xs px-6 py-3 rounded-xl hover:bg-slate-200 transition">Return Home</button>
     </div>
 
     <script>
         const DB_BASE = "https://loto-pro-f7417-default-rtdb.firebaseio.com";
-        const urlParams = new URLSearchParams(window.location.search);
-        const procId = urlParams.get('id');
+        
+        // Energy Styling Configuration (Matches Engine)
+        const energyConfig = {
+            "Electrical": { code: "E", color: "bg-red-600" },
+            "Mechanical": { code: "M", color: "bg-blue-700" },
+            "Pneumatic": { code: "PN", color: "bg-cyan-600" },
+            "Hydraulic": { code: "H", color: "bg-orange-700" },
+            "Chemical": { code: "C", color: "bg-green-700" },
+            "Gas": { code: "G", color: "bg-slate-600" },
+            "Thermal": { code: "T", color: "bg-orange-600" },
+            "Gravity": { code: "GR", color: "bg-purple-700" },
+            "Water/Steam": { code: "W", color: "bg-blue-600" },
+            "Radiation": { code: "R", color: "bg-amber-500" },
+            "Magnetic": { code: "MG", color: "bg-slate-500" }
+        };
 
         async function loadProcedure() {
-            // Note: Since this is a public viewer, you need to know which orgId it belongs to. 
-            // Often this is hardcoded or part of the QR URL.
-            const orgId = "YOUR_ORG_ID"; 
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // 1. GET PARAMS: Try URL first, fallback to session (if user is logged in locally)
+            const procId = urlParams.get('id');
+            const orgId = urlParams.get('org') || sessionStorage.getItem('loto_org_id');
+
+            if (!procId || !orgId) {
+                showError();
+                return;
+            }
 
             try {
+                // 2. FETCH: Dynamic path based on params
+                // Note: Only fetching from 'approved' folder for safety
                 const res = await fetch(`${DB_BASE}/${orgId}/inventory/approved/${procId}.json`);
                 const data = await res.json();
                 
                 if(!data) throw "Not Found";
 
+                // 3. RENDER UI
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('content').classList.remove('hidden');
                 
                 document.getElementById('title').innerText = data.description;
-                document.getElementById('meta').innerText = `ID: ${data.id} | Site: ${data.facility}`;
+                document.getElementById('proc-id').innerText = `SYSTEM ID: ${data.id}`;
+                document.getElementById('site-badge').innerText = `SITE: ${data.facility} / ${data.location}`;
+                document.getElementById('date-badge').innerText = `REV: ${data.date}`;
+
+                const container = document.getElementById('steps-container');
 
                 data.steps.forEach((s, i) => {
-                    const stepDiv = document.createElement('div');
-                    stepDiv.className = "p-4 bg-white/5 rounded-xl border border-white/10";
-                    stepDiv.innerHTML = `
-                        <p class="text-[9px] font-black text-red-500 mb-1 uppercase">Step ${i+1}: ${s.type}</p>
-                        <p class="text-sm font-bold">${s.isolate}</p>
-                        <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase italic text-blue-400">Verify: ${s.verify}</p>
+                    // Determine styling based on energy type
+                    const style = energyConfig[s.type] || { code: "?", color: "bg-slate-700" };
+                    
+                    const stepCard = document.createElement('div');
+                    stepCard.className = "glass-panel rounded-xl overflow-hidden";
+                    
+                    // Logic to show image if it exists
+                    const imgHTML = s.image 
+                        ? `<div class="w-full h-48 bg-black/50 border-b border-white/5"><img src="${s.image}" class="w-full h-full object-cover"></div>` 
+                        : '';
+
+                    // Logic to show hardware badges
+                    const hwBadges = (s.devices || []).map(d => 
+                        `<span class="text-[8px] font-black uppercase text-slate-300 bg-white/10 px-2 py-1 rounded border border-white/5">${d}</span>`
+                    ).join('');
+
+                    stepCard.innerHTML = `
+                        ${imgHTML}
+                        <div class="p-5 relative">
+                            <div class="absolute top-0 left-0 w-1.5 h-full ${style.color}"></div>
+                            <div class="flex justify-between items-start mb-3 pl-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-black text-white ${style.color}">${s.tag || (i+1)}</span>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${s.type} Energy</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pl-2 space-y-4">
+                                <div>
+                                    <p class="text-[8px] font-black text-slate-500 uppercase mb-1">Isolation Method</p>
+                                    <p class="text-sm font-bold text-white leading-relaxed">${s.isolate}</p>
+                                </div>
+                                <div class="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+                                    ${hwBadges}
+                                </div>
+                                <div class="bg-blue-900/20 border border-blue-500/20 p-3 rounded-lg">
+                                    <p class="text-[8px] font-black text-blue-400 uppercase mb-1">Verification Step</p>
+                                    <p class="text-xs font-bold text-blue-100 italic">"${s.verify}"</p>
+                                </div>
+                            </div>
+                        </div>
                     `;
-                    document.getElementById('steps-container').appendChild(stepDiv);
+                    container.appendChild(stepCard);
                 });
+
             } catch (e) {
-                document.getElementById('loading').innerText = "PROCEDURE NOT FOUND";
+                console.error(e);
+                showError();
             }
         }
+
+        function showError() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error-msg').classList.remove('hidden');
+        }
+
         loadProcedure();
     </script>
 </body>
