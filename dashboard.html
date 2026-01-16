@@ -33,6 +33,8 @@
             outline: none; 
         }
         .filter-input:focus { border-color: #ef4444; }
+        .tab-btn { opacity: 0.5; transition: 0.3s; border-bottom: 2px solid transparent; }
+        .tab-btn.active { opacity: 1; border-color: #ef4444; color: white; }
     </style>
 </head>
 <body class="bg-mesh min-h-screen pb-20">
@@ -40,62 +42,106 @@
     <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto border-b border-white/5 sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md">
         <div onclick="window.location.href='home.html'" class="cursor-pointer flex items-center gap-3">
             <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center font-black italic shadow-lg">LP</div>
-            <h1 class="text-xl font-black italic uppercase tracking-tighter">LOTO<span class="text-red-600">PRO</span> <span class="text-slate-500 ml-2">Analytics</span></h1>
+            <h1 class="text-xl font-black italic uppercase tracking-tighter">LOTO<span class="text-red-600">PRO</span> <span class="text-slate-500 ml-2">Control</span></h1>
         </div>
         <button onclick="window.location.href='home.html'" class="bg-white/5 text-white text-[10px] font-black px-6 py-2.5 rounded-full border border-white/10 uppercase hover:bg-white/10 transition-all">Exit Dashboard</button>
     </nav>
 
     <main class="max-w-7xl mx-auto px-6 py-10 space-y-8">
         
-        <div class="glass-card p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-                <label class="text-[9px] font-black text-slate-500 uppercase ml-2 mb-1 block tracking-widest">Site/Facility</label>
-                <input type="text" id="filterSite" oninput="fetchAnalytics()" placeholder="All Sites..." class="filter-input">
+        <div class="flex gap-8 border-b border-white/10 pb-1 mb-8">
+            <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn active text-sm font-black uppercase tracking-widest pb-3">Analytics Overview</button>
+            <button onclick="switchTab('register')" id="tab-register" class="tab-btn text-sm font-black uppercase tracking-widest pb-3">LOTO Register</button>
+        </div>
+
+        <div id="view-analytics" class="space-y-8">
+            <div class="glass-card p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase ml-2 mb-1 block tracking-widest">Site/Facility</label>
+                    <input type="text" id="filterSite" oninput="fetchAnalytics()" placeholder="All Sites..." class="filter-input">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase ml-2 mb-1 block tracking-widest">Location/Area</label>
+                    <input type="text" id="filterLocation" oninput="fetchAnalytics()" placeholder="All Areas..." class="filter-input">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase ml-2 mb-1 block tracking-widest">Equipment Search</label>
+                    <input type="text" id="filterEquip" oninput="fetchAnalytics()" placeholder="Asset Name..." class="filter-input">
+                </div>
             </div>
-            <div>
-                <label class="text-[9px] font-black text-slate-500 uppercase ml-2 mb-1 block tracking-widest">Location/Area</label>
-                <input type="text" id="filterLocation" oninput="fetchAnalytics()" placeholder="All Areas..." class="filter-input">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-card p-8 border-l-4 border-l-green-600">
+                    <h3 class="text-xs font-black text-green-500 uppercase tracking-widest mb-2">Approved Protocols</h3>
+                    <div id="total-procedures" class="stat-value text-white">0</div>
+                    <p class="text-[10px] text-slate-500 uppercase mt-3 font-bold italic">Total Active Safety Procedures</p>
+                </div>
+                <div class="glass-card p-8 border-l-4 border-l-blue-600">
+                    <h3 class="text-xs font-black text-blue-400 uppercase tracking-widest mb-2">Energy Sources</h3>
+                    <div id="total-energy" class="stat-value text-white">0</div>
+                    <p class="text-[10px] text-slate-500 uppercase mt-3 font-bold italic">Active Isolation Points Found</p>
+                </div>
+                <div class="glass-card p-8 border-l-4 border-l-red-600">
+                    <h3 class="text-xs font-black text-red-500 uppercase tracking-widest mb-2">LOTO Devices</h3>
+                    <div id="total-hardware" class="stat-value text-white">0</div>
+                    <p class="text-[10px] text-slate-500 uppercase mt-3 font-bold italic">Total Lockout Hardware Required</p>
+                </div>
             </div>
-            <div>
-                <label class="text-[9px] font-black text-slate-500 uppercase ml-2 mb-1 block tracking-widest">Equipment Search</label>
-                <input type="text" id="filterEquip" oninput="fetchAnalytics()" placeholder="Asset Name..." class="filter-input">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-card p-6">
+                    <h3 class="text-sm font-black uppercase italic mb-6 border-b border-white/5 pb-4">Energy Source Types</h3>
+                    <div id="energy-breakdown" class="space-y-3"></div>
+                </div>
+                <div class="glass-card p-6">
+                    <h3 class="text-sm font-black uppercase italic mb-6 border-b border-white/5 pb-4">Required Hardware Types</h3>
+                    <div id="hardware-breakdown" class="space-y-3"></div>
+                </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="glass-card p-8 border-l-4 border-l-green-600">
-                <h3 class="text-xs font-black text-green-500 uppercase tracking-widest mb-2">Approved Protocols</h3>
-                <div id="total-procedures" class="stat-value text-white">0</div>
-                <p class="text-[10px] text-slate-500 uppercase mt-3 font-bold italic">Total Active Safety Procedures</p>
+        <div id="view-register" class="hidden glass-card overflow-hidden">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                <h3 class="text-sm font-black uppercase italic tracking-widest">Live Lock Activity Log</h3>
+                <button onclick="fetchRegister()" class="text-[10px] font-bold uppercase bg-white/5 px-3 py-1 rounded-full hover:bg-white/10">Refresh Log</button>
             </div>
-            <div class="glass-card p-8 border-l-4 border-l-blue-600">
-                <h3 class="text-xs font-black text-blue-400 uppercase tracking-widest mb-2">Energy Sources</h3>
-                <div id="total-energy" class="stat-value text-white">0</div>
-                <p class="text-[10px] text-slate-500 uppercase mt-3 font-bold italic">Active Isolation Points Found</p>
-            </div>
-            <div class="glass-card p-8 border-l-4 border-l-red-600">
-                <h3 class="text-xs font-black text-red-500 uppercase tracking-widest mb-2">LOTO Devices</h3>
-                <div id="total-hardware" class="stat-value text-white">0</div>
-                <p class="text-[10px] text-slate-500 uppercase mt-3 font-bold italic">Total Lockout Hardware Required</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-white/5 text-[9px] uppercase font-black text-slate-400">
+                        <tr>
+                            <th class="p-4">Timestamp</th>
+                            <th class="p-4">Action</th>
+                            <th class="p-4">User</th>
+                            <th class="p-4">Procedure ID</th>
+                            <th class="p-4">Equipment / Step</th>
+                        </tr>
+                    </thead>
+                    <tbody id="register-rows" class="text-xs font-bold text-slate-300 divide-y divide-white/5">
+                        </tbody>
+                </table>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="glass-card p-6">
-                <h3 class="text-sm font-black uppercase italic mb-6 border-b border-white/5 pb-4">Energy Source Types</h3>
-                <div id="energy-breakdown" class="space-y-3"></div>
-            </div>
-            <div class="glass-card p-6">
-                <h3 class="text-sm font-black uppercase italic mb-6 border-b border-white/5 pb-4">Required Hardware Types</h3>
-                <div id="hardware-breakdown" class="space-y-3"></div>
-            </div>
-        </div>
     </main>
 
     <script>
         const DB_BASE = "https://loto-pro-f7417-default-rtdb.firebaseio.com";
         const orgId = sessionStorage.getItem("loto_org_id");
 
+        function switchTab(tab) {
+            document.getElementById('view-analytics').classList.add('hidden');
+            document.getElementById('view-register').classList.add('hidden');
+            document.getElementById('tab-analytics').classList.remove('active');
+            document.getElementById('tab-register').classList.remove('active');
+
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+
+            if(tab === 'analytics') fetchAnalytics();
+            if(tab === 'register') fetchRegister();
+        }
+
+        // --- ANALYTICS LOGIC ---
         async function fetchAnalytics() {
             const fSite = document.getElementById('filterSite').value.toLowerCase();
             const fLoc = document.getElementById('filterLocation').value.toLowerCase();
@@ -105,13 +151,7 @@
                 const res = await fetch(`${DB_BASE}/${orgId}/inventory/approved.json`);
                 const data = await res.json();
                 
-                let stats = {
-                    procs: 0,
-                    energy: 0,
-                    hardware: 0,
-                    energyMap: {},
-                    hardwareMap: {}
-                };
+                let stats = { procs: 0, energy: 0, hardware: 0, energyMap: {}, hardwareMap: {} };
 
                 if (data) {
                     Object.values(data).forEach(proc => {
@@ -138,43 +178,64 @@
                         }
                     });
                 }
-
-                // Update UI Counters
                 document.getElementById('total-procedures').innerText = stats.procs;
                 document.getElementById('total-energy').innerText = stats.energy;
                 document.getElementById('total-hardware').innerText = stats.hardware;
-
-                // Update List Breakdowns
                 renderList('energy-breakdown', stats.energyMap, 'blue');
                 renderList('hardware-breakdown', stats.hardwareMap, 'red');
 
-            } catch (err) {
-                console.error("Dashboard Load Error:", err);
-            }
+            } catch (err) { console.error("Analytics Error:", err); }
         }
 
         function renderList(containerId, map, color) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
             const items = Object.entries(map).sort((a,b) => b[1] - a[1]);
-
-            if (items.length === 0) {
-                container.innerHTML = `<p class="text-[10px] text-slate-600 font-black uppercase text-center py-10">No data for selected filters</p>`;
-                return;
-            }
-
+            if (items.length === 0) { container.innerHTML = `<p class="text-[10px] text-slate-600 font-black uppercase text-center py-10">No data</p>`; return; }
             items.forEach(([key, val]) => {
-                const row = document.createElement('div');
-                row.className = "flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-all";
-                row.innerHTML = `
-                    <span class="text-[10px] font-black uppercase tracking-tight text-slate-300">${key}</span>
-                    <span class="text-sm font-black text-${color}-500 italic">${val}</span>
-                `;
-                container.appendChild(row);
+                container.innerHTML += `<div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5 mb-2"><span class="text-[10px] font-black uppercase tracking-tight text-slate-300">${key}</span><span class="text-sm font-black text-${color}-500 italic">${val}</span></div>`;
             });
         }
 
-        window.onload = fetchAnalytics;
+        // --- REGISTER LOGIC ---
+        async function fetchRegister() {
+            const tbody = document.getElementById('register-rows');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 uppercase text-[10px] text-slate-500 animate-pulse">Syncing Logs...</td></tr>';
+            
+            try {
+                const res = await fetch(`${DB_BASE}/${orgId}/register.json`);
+                const data = await res.json();
+                tbody.innerHTML = '';
+
+                if (!data) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 uppercase text-[10px] text-slate-500">No Register Activity Found</td></tr>';
+                    return;
+                }
+
+                // Convert object to array and sort by time descending
+                const logs = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                logs.forEach(log => {
+                    const dateObj = new Date(log.timestamp);
+                    const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString();
+                    const actionClass = log.action === 'LOCK APPLIED' ? 'text-red-500 bg-red-900/10 border-red-900/30' : 'text-green-500 bg-green-900/10 border-green-900/30';
+
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-white/5 transition";
+                    row.innerHTML = `
+                        <td class="p-4 font-mono text-[10px] text-slate-400">${dateStr}</td>
+                        <td class="p-4"><span class="border px-2 py-1 rounded ${actionClass} text-[9px] font-black uppercase">${log.action}</span></td>
+                        <td class="p-4 text-white">${log.user || 'Unknown'}</td>
+                        <td class="p-4 font-mono text-slate-500">${log.procedureId}</td>
+                        <td class="p-4 text-slate-400 text-[10px]"><div class="font-bold text-white uppercase">${log.equipment}</div>Step: ${log.step} (${log.energy})</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            } catch(e) { console.error("Register Error", e); }
+        }
+
+        window.onload = () => fetchAnalytics(); // Default load
     </script>
 </body>
 </html>
