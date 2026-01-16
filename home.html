@@ -35,12 +35,6 @@
             letter-spacing: 1px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        /* Notification Panel for Approvals */
-        .alert-panel {
-            background: rgba(249, 115, 22, 0.1);
-            border: 1px solid rgba(249, 115, 22, 0.3);
-            backdrop-filter: blur(10px);
-        }
         /* Scanner Styles */
         #scanner-modal {
             display: none;
@@ -72,8 +66,7 @@
         </div>
         
         <div class="flex items-center gap-6">
-            <div id="admin-actions" class="flex gap-2">
-            </div>
+            <div id="admin-actions" class="flex gap-2"></div>
             <div class="text-right flex flex-col items-end gap-1 border-r border-white/10 pr-6 mr-2 hidden md:flex">
                 <div class="flex items-center gap-2">
                     <span id="org-display" class="badge bg-blue-500/10 text-blue-400 border-blue-500/30">ORG: --</span>
@@ -81,7 +74,6 @@
                 </div>
                 <p id="user-display" class="text-sm font-black uppercase tracking-tight text-white mt-1 italic"></p>
             </div>
-            
             <button onclick="logout()" class="bg-white/5 border border-white/10 p-2.5 rounded-full hover:bg-red-600/20 hover:border-red-600/40 transition-all group shadow-xl">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -96,21 +88,7 @@
             <h3 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter max-w-3xl leading-tight">Safety <span class="text-slate-500">Operation Center</span></h3>
         </header>
 
-        <div id="pending-alert-container" class="hidden w-full max-w-[1400px] mb-8">
-            <div class="alert-panel p-6 rounded-[24px] w-full shadow-2xl shadow-orange-500/10 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1.5 h-full bg-orange-500"></div>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                        <h2 class="text-sm font-black uppercase tracking-[0.2em] text-orange-400">Pending Staff Approvals</h2>
-                    </div>
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Action Required by Manager/Owner</span>
-                </div>
-                <div id="pending-users-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[1400px] w-full">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-[1400px] w-full">
             
             <div onclick="window.location.href='index.html'" class="glass-card p-8 rounded-[32px]">
                 <div class="w-12 h-12 bg-red-600/20 text-red-500 rounded-xl flex items-center justify-center mb-6 shadow-inner">
@@ -142,6 +120,17 @@
                 <span class="text-[8px] font-black uppercase text-blue-400 bg-blue-400/5 px-3 py-1 rounded-full border border-blue-400/10 tracking-widest">Review</span>
             </div>
 
+            <div onclick="window.location.href='register.html'" class="glass-card p-8 rounded-[32px]">
+                <div class="w-12 h-12 bg-orange-600/20 text-orange-500 rounded-xl flex items-center justify-center mb-6 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                </div>
+                <h4 class="text-xl font-black uppercase italic mb-2 tracking-tighter text-white">LOTO Register</h4>
+                <p class="text-slate-500 text-[10px] font-bold leading-relaxed mb-4">Live timestamped log of all lock applications/removals.</p>
+                <span class="text-[8px] font-black uppercase text-orange-400 bg-orange-400/5 px-3 py-1 rounded-full border border-orange-400/10 tracking-widest">Audit Log</span>
+            </div>
+
             <div id="dash-card" onclick="handleAdmin('dashboard.html')" class="glass-card p-8 rounded-[32px] opacity-40 grayscale">
                 <div class="w-12 h-12 bg-green-600/20 text-green-500 rounded-xl flex items-center justify-center mb-6 shadow-inner">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
@@ -171,6 +160,7 @@
     </footer>
 
     <script>
+        // ... (Same Script Logic as previous versions) ...
         const DB_BASE = "https://loto-pro-f7417-default-rtdb.firebaseio.com";
         let html5QrcodeScanner = null;
 
@@ -183,7 +173,6 @@
             document.getElementById('org-display').innerText = `ORG: ${org || 'None'}`;
             document.getElementById('role-display').innerText = `ROLE: ${role || 'User'}`;
 
-            // Inject Admin Button if Owner
             if (role === 'Owner') {
                 const adminDiv = document.getElementById('admin-actions');
                 const userBtn = document.createElement('button');
@@ -193,7 +182,6 @@
                 adminDiv.appendChild(userBtn);
             }
 
-            // Dashboard Permissions
             if (role === 'Manager' || role === 'Owner') {
                 const dash = document.getElementById('dash-card');
                 const lock = document.getElementById('dash-lock');
@@ -201,85 +189,8 @@
                 lock.innerText = "Authorized";
                 lock.classList.replace('text-red-500', 'text-green-500');
                 lock.classList.replace('bg-red-500/5', 'bg-green-500/5');
-
-                // Trigger Notification Check
-                checkPendingUsers(org);
             }
         };
-
-        // --- APPROVAL LOGIC ---
-        
-        async function checkPendingUsers(orgId) {
-            try {
-                const res = await fetch(`${DB_BASE}/${orgId}/users.json`);
-                const data = await res.json();
-                
-                if (!data) return;
-
-                const pendingList = document.getElementById('pending-users-list');
-                const container = document.getElementById('pending-alert-container');
-                let hasPending = false;
-
-                pendingList.innerHTML = ''; // Clear previous
-
-                Object.entries(data).forEach(([key, user]) => {
-                    if (!user.isAuthorized) {
-                        hasPending = true;
-                        const card = document.createElement('div');
-                        card.className = "bg-slate-900/50 p-4 rounded-xl border border-white/5 flex flex-col gap-2";
-                        card.innerHTML = `
-                            <div class="flex justify-between items-center">
-                                <h3 class="text-sm font-black italic text-white uppercase">${user.name}</h3>
-                                <span class="text-[8px] bg-slate-700 text-slate-300 px-2 py-1 rounded font-bold uppercase">${user.role}</span>
-                            </div>
-                            <p class="text-[10px] text-slate-500 font-mono mb-2">${user.email}</p>
-                            <div class="flex gap-2">
-                                <button onclick="approveUser('${key}', '${user.role}')" class="flex-1 bg-green-600 hover:bg-green-500 text-white text-[9px] font-black uppercase py-2 rounded-lg transition">Accept</button>
-                                <button onclick="rejectUser('${key}')" class="flex-1 bg-white/5 hover:bg-red-900/40 text-slate-400 hover:text-red-500 text-[9px] font-black uppercase py-2 rounded-lg transition border border-white/5">Decline</button>
-                            </div>
-                        `;
-                        pendingList.appendChild(card);
-                    }
-                });
-
-                if (hasPending) {
-                    container.classList.remove('hidden');
-                } else {
-                    container.classList.add('hidden');
-                }
-
-            } catch (error) {
-                console.error("Error fetching users:", error);
-            }
-        }
-
-        async function approveUser(key, role) {
-            if(!confirm("Authorize this user?")) return;
-            const orgId = sessionStorage.getItem("loto_org_id");
-            
-            // 1. Fetch current data
-            const res = await fetch(`${DB_BASE}/${orgId}/users/${key}.json`);
-            const userData = await res.json();
-            
-            // 2. Update status
-            await fetch(`${DB_BASE}/${orgId}/users/${key}.json`, { 
-                method: 'PUT', 
-                body: JSON.stringify({ ...userData, isAuthorized: true }) 
-            });
-
-            // 3. Refresh UI
-            checkPendingUsers(orgId);
-        }
-
-        async function rejectUser(key) {
-            if(!confirm("Permanently decline and remove this request?")) return;
-            const orgId = sessionStorage.getItem("loto_org_id");
-            await fetch(`${DB_BASE}/${orgId}/users/${key}.json`, { method: 'DELETE' });
-            checkPendingUsers(orgId);
-        }
-
-
-        // --- NAVIGATION LOGIC ---
 
         function handleAdmin(path) {
             const role = sessionStorage.getItem("loto_user_role");
@@ -298,7 +209,6 @@
         }
 
         // --- SCANNER LOGIC ---
-
         function startScanner() {
             document.getElementById('scanner-modal').style.display = 'flex';
             html5QrcodeScanner = new Html5Qrcode("reader");
@@ -309,23 +219,16 @@
 
         function onScanSuccess(decodedText, decodedResult) {
             stopScanner();
-            
             let targetOrg = sessionStorage.getItem("loto_org_id");
             let targetId = decodedText;
-
             try {
                 const url = new URL(decodedText);
                 const urlParams = new URLSearchParams(url.search);
                 if (urlParams.has('id')) targetId = urlParams.get('id');
                 if (urlParams.has('org')) targetOrg = urlParams.get('org');
-            } catch (e) {
-                console.log("Scanned format detected: Raw ID");
-            }
+            } catch (e) { console.log("Scanned format detected: Raw ID"); }
 
-            if(!targetId || !targetOrg) {
-                alert("Error: Procedure ID or Organization could not be identified.");
-                return;
-            }
+            if(!targetId || !targetOrg) { alert("Error: ID invalid."); return; }
             window.location.href = `view.html?org=${targetOrg}&id=${targetId}`;
         }
 
