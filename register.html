@@ -19,6 +19,12 @@
             border: 1px solid rgba(255, 255, 255, 0.08); 
             border-radius: 24px;
         }
+        .status-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .status-partial { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+        .status-complete { border-left-color: #22c55e; background: rgba(34, 197, 94, 0.05); }
     </style>
 </head>
 <body class="bg-mesh min-h-screen pb-20">
@@ -33,37 +39,50 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-6 py-10 space-y-8">
+    <main class="max-w-7xl mx-auto px-6 py-10 space-y-10">
         
-        <div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-4">
-            <div>
-                <h2 class="text-2xl font-black uppercase italic tracking-tighter">Live Activity Log</h2>
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Real-time isolation tracking</p>
+        <div>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                <h2 class="text-sm font-black uppercase tracking-[0.2em] text-orange-500">Live Lockout Status</h2>
             </div>
-            <div class="flex gap-2">
-                <button onclick="fetchRegister()" class="bg-white/5 text-white text-[10px] font-black px-4 py-2.5 rounded-xl border border-white/10 uppercase hover:bg-white/10 transition-all">Refresh</button>
-                <button onclick="exportToExcel()" class="bg-green-600 text-white text-[10px] font-black px-6 py-2.5 rounded-xl border border-green-500 uppercase hover:bg-green-500 transition-all shadow-lg shadow-green-900/20 flex items-center gap-2">
-                    <span>Download Excel</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                </button>
+            
+            <div id="live-status-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="col-span-full text-center py-10 opacity-50 text-[10px] font-bold uppercase tracking-widest">Calculated from Real-time Logs...</div>
             </div>
         </div>
 
-        <div class="glass-card overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left" id="register-table">
-                    <thead class="bg-white/5 text-[9px] uppercase font-black text-slate-400">
-                        <tr>
-                            <th class="p-4">Timestamp</th>
-                            <th class="p-4">Action</th>
-                            <th class="p-4">User</th>
-                            <th class="p-4">Procedure ID</th>
-                            <th class="p-4">Equipment / Step</th>
-                        </tr>
-                    </thead>
-                    <tbody id="register-rows" class="text-xs font-bold text-slate-300 divide-y divide-white/5">
-                        </tbody>
-                </table>
+        <div class="border-t border-white/5 pt-10">
+            <div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-4">
+                <div>
+                    <h2 class="text-xl font-black uppercase italic tracking-tighter text-slate-300">Activity Log</h2>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Audit Trail history</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="fetchData()" class="bg-white/5 text-white text-[10px] font-black px-4 py-2.5 rounded-xl border border-white/10 uppercase hover:bg-white/10 transition-all">Refresh</button>
+                    <button onclick="exportToExcel()" class="bg-green-600 text-white text-[10px] font-black px-6 py-2.5 rounded-xl border border-green-500 uppercase hover:bg-green-500 transition-all shadow-lg shadow-green-900/20 flex items-center gap-2">
+                        <span>Download Excel</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left" id="register-table">
+                        <thead class="bg-white/5 text-[9px] uppercase font-black text-slate-400">
+                            <tr>
+                                <th class="p-4">Timestamp</th>
+                                <th class="p-4">Action</th>
+                                <th class="p-4">User</th>
+                                <th class="p-4">Procedure ID</th>
+                                <th class="p-4">Equipment / Step</th>
+                            </tr>
+                        </thead>
+                        <tbody id="register-rows" class="text-xs font-bold text-slate-300 divide-y divide-white/5">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -72,50 +91,137 @@
     <script>
         const DB_BASE = "https://loto-pro-f7417-default-rtdb.firebaseio.com";
         const orgId = sessionStorage.getItem("loto_org_id");
-        let currentData = [];
+        let currentLogData = [];
 
-        async function fetchRegister() {
-            const tbody = document.getElementById('register-rows');
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 uppercase text-[10px] text-slate-500 animate-pulse">Syncing Logs...</td></tr>';
-            
+        async function fetchData() {
+            // Fetch both Logs and Inventory to compare counts
             try {
-                const res = await fetch(`${DB_BASE}/${orgId}/register.json`);
-                const data = await res.json();
-                tbody.innerHTML = '';
+                const [logRes, invRes] = await Promise.all([
+                    fetch(`${DB_BASE}/${orgId}/register.json`),
+                    fetch(`${DB_BASE}/${orgId}/inventory/approved.json`)
+                ]);
 
-                if (!data) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 uppercase text-[10px] text-slate-500">No Register Activity Found</td></tr>';
-                    return;
-                }
+                const logData = await logRes.json();
+                const invData = await invRes.json();
 
-                // Process Data
-                currentData = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderLogs(logData);
+                calculateLiveStatus(logData, invData);
 
-                currentData.forEach(log => {
-                    const dateObj = new Date(log.timestamp);
-                    const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString();
-                    const actionClass = log.action === 'LOCK APPLIED' ? 'text-red-500 bg-red-900/10 border-red-900/30' : 'text-green-500 bg-green-900/10 border-green-900/30';
-
-                    const row = document.createElement('tr');
-                    row.className = "hover:bg-white/5 transition";
-                    row.innerHTML = `
-                        <td class="p-4 font-mono text-[10px] text-slate-400">${dateStr}</td>
-                        <td class="p-4"><span class="border px-2 py-1 rounded ${actionClass} text-[9px] font-black uppercase">${log.action}</span></td>
-                        <td class="p-4 text-white">${log.user || 'Unknown'}</td>
-                        <td class="p-4 font-mono text-slate-500">${log.procedureId}</td>
-                        <td class="p-4 text-slate-400 text-[10px]"><div class="font-bold text-white uppercase">${log.equipment}</div>Step: ${log.step} (${log.energy})</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-
-            } catch(e) { console.error("Register Error", e); }
+            } catch(e) { console.error("Sync Error", e); }
         }
 
-        function exportToExcel() {
-            if(currentData.length === 0) { alert("No data to export."); return; }
+        // --- 1. RENDER HISTORICAL TABLE ---
+        function renderLogs(data) {
+            const tbody = document.getElementById('register-rows');
+            tbody.innerHTML = '';
+
+            if (!data) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 uppercase text-[10px] text-slate-500">No Activity Found</td></tr>';
+                return;
+            }
+
+            currentLogData = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            currentLogData.forEach(log => {
+                const dateObj = new Date(log.timestamp);
+                const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString();
+                const actionClass = log.action === 'LOCK APPLIED' ? 'text-red-500 bg-red-900/10 border-red-900/30' : 'text-green-500 bg-green-900/10 border-green-900/30';
+
+                const row = document.createElement('tr');
+                row.className = "hover:bg-white/5 transition";
+                row.innerHTML = `
+                    <td class="p-4 font-mono text-[10px] text-slate-400">${dateStr}</td>
+                    <td class="p-4"><span class="border px-2 py-1 rounded ${actionClass} text-[9px] font-black uppercase">${log.action}</span></td>
+                    <td class="p-4 text-white">${log.user || 'Unknown'}</td>
+                    <td class="p-4 font-mono text-slate-500">${log.procedureId}</td>
+                    <td class="p-4 text-slate-400 text-[10px]"><div class="font-bold text-white uppercase">${log.equipment}</div>Step: ${log.step} (${log.energy})</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // --- 2. CALCULATE LIVE STATUS ---
+        function calculateLiveStatus(logs, inventory) {
+            const container = document.getElementById('live-status-container');
+            container.innerHTML = '';
             
-            // Format data for clean Excel columns
-            const excelData = currentData.map(log => ({
+            if (!logs || !inventory) {
+                container.innerHTML = `<div class="col-span-full p-6 glass-card text-center text-[10px] text-slate-500 font-bold uppercase">No active data available for calculation.</div>`;
+                return;
+            }
+
+            // 1. Replay Logs to build state
+            // State Structure: { "PROC-ID": Set("step-1", "step-3") }
+            const procState = {}; 
+
+            // Sort logs chronologically (Oldest -> Newest) to replay history
+            const chronLogs = Object.values(logs).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            chronLogs.forEach(log => {
+                if (!procState[log.procedureId]) procState[log.procedureId] = new Set();
+                
+                if (log.action === 'LOCK APPLIED') {
+                    procState[log.procedureId].add(log.step);
+                } else if (log.action === 'LOCK REMOVED') {
+                    procState[log.procedureId].delete(log.step);
+                }
+            });
+
+            // 2. Compare State vs Inventory
+            let hasActive = false;
+
+            Object.keys(procState).forEach(procId => {
+                const lockedSteps = procState[procId].size;
+                
+                // Only show if there are currently locks applied
+                if (lockedSteps > 0) {
+                    hasActive = true;
+                    
+                    // Find matching approved procedure to get TOTAL steps
+                    // Note: Inventory keys might differ from ID field, so we search by ID field
+                    const procDef = Object.values(inventory).find(p => p.id === procId);
+                    
+                    // Default to '?' if procedure was deleted but logs exist
+                    const totalSteps = procDef ? (procDef.steps ? procDef.steps.length : 0) : '?';
+                    const equipName = procDef ? procDef.description : "Unknown Equipment";
+
+                    const isComplete = (lockedSteps === totalSteps);
+                    const statusClass = isComplete ? 'status-complete' : 'status-partial';
+                    const statusText = isComplete ? 'COMPLETELY LOCKED' : 'PARTIALLY LOCKED';
+                    const statusColor = isComplete ? 'text-green-500' : 'text-orange-500';
+
+                    const card = document.createElement('div');
+                    card.className = `glass-card p-6 status-card ${statusClass}`;
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-black italic uppercase text-white leading-tight">${equipName}</h3>
+                                <p class="text-[10px] font-mono font-bold text-slate-500 mt-1">${procId}</p>
+                            </div>
+                            <span class="${statusColor} bg-slate-950/50 border border-white/5 px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest">${statusText}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full ${isComplete ? 'bg-green-500' : 'bg-orange-500'}" style="width: ${(lockedSteps/totalSteps)*100}%"></div>
+                            </div>
+                            <span class="text-xs font-black text-white">${lockedSteps}/${totalSteps}</span>
+                        </div>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Steps Secured</p>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+
+            if (!hasActive) {
+                container.innerHTML = `<div class="col-span-full p-8 glass-card border-dashed border border-white/10 text-center"><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">No Active Lockouts Detected (All Systems Clear)</p></div>`;
+            }
+        }
+
+        // --- 3. EXCEL EXPORT ---
+        function exportToExcel() {
+            if(currentLogData.length === 0) { alert("No data to export."); return; }
+            
+            const excelData = currentLogData.map(log => ({
                 "Date & Time": new Date(log.timestamp).toLocaleString(),
                 "Action": log.action,
                 "User": log.user,
@@ -129,12 +235,11 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "LOTO Register");
             
-            // Generate Filename with Date
             const dateStr = new Date().toISOString().slice(0,10);
             XLSX.writeFile(wb, `LOTO_Register_${orgId}_${dateStr}.xlsx`);
         }
 
-        window.onload = fetchRegister;
+        window.onload = fetchData;
     </script>
 </body>
 </html>
