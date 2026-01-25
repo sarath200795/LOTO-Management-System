@@ -77,10 +77,11 @@
         const orgId = sessionStorage.getItem("loto_org_id");
         const currentUserRole = sessionStorage.getItem("loto_user_role");
 
-        // Guard: Only Owner/Manager can see this page
-        if (currentUserRole !== 'Owner' && currentUserRole !== 'Manager') {
+        // --- SECURITY GUARD ---
+        // Redirect if no Org ID or if user is not Owner/Manager
+        if (!orgId || (currentUserRole !== 'Owner' && currentUserRole !== 'Manager')) {
             alert("Security Alert: Authorized Personnel Only.");
-            window.location.href = 'home.html';
+            window.location.href = 'index.html'; // Redirect to login
         }
 
         async function fetchUsers() {
@@ -89,7 +90,8 @@
                 const data = await res.json();
                 renderUsers(data);
             } catch(e) {
-                console.error(e);
+                console.error("Connection Error:", e);
+                alert("Failed to load staff list. Check internet connection.");
             }
         }
 
@@ -103,46 +105,56 @@
             
             let hasPending = false;
 
-            if (!data) return;
+            if (!data) {
+                activeContainer.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">No staff found.</td></tr>';
+                return;
+            }
 
             Object.entries(data).forEach(([key, user]) => {
-                // 1. Pending Users
+                // 1. PENDING USERS (Not Authorized)
                 if (!user.isAuthorized) {
                     hasPending = true;
                     const div = document.createElement('div');
-                    div.className = "p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-orange-500/5";
+                    div.className = "p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-orange-500/5 transition hover:bg-orange-500/10";
                     div.innerHTML = `
                         <div>
                             <h3 class="text-lg font-black italic uppercase text-white">${user.name}</h3>
-                            <p class="text-[10px] text-orange-400 font-bold uppercase tracking-widest">Requesting: ${user.role} Access</p>
-                            <p class="text-[10px] text-slate-500">${user.email}</p>
+                            <div class="flex gap-2 items-center mt-1">
+                                <span class="text-[9px] bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded uppercase font-bold">Requesting: ${user.role}</span>
+                                <span class="text-[10px] text-slate-500 font-mono">${user.email}</span>
+                            </div>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="updateUser('${key}', true, '${user.role}')" class="bg-green-600 text-white text-[10px] font-black uppercase px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition-transform">Approve</button>
-                            <button onclick="deleteUser('${key}', '${user.name}')" class="bg-white/5 text-slate-400 text-[10px] font-black uppercase px-4 py-3 rounded-xl hover:text-red-500 border border-white/5">Reject</button>
+                            <button onclick="updateUser(this, '${key}', true)" class="bg-green-600 text-white text-[10px] font-black uppercase px-6 py-3 rounded-xl shadow-lg hover:bg-green-500 hover:scale-105 transition-all">Approve</button>
+                            <button onclick="deleteUser(this, '${key}', '${user.name}')" class="bg-white/5 text-slate-400 text-[10px] font-black uppercase px-4 py-3 rounded-xl hover:text-red-500 hover:bg-red-500/10 border border-white/5 transition-all">Reject</button>
                         </div>
                     `;
                     pendingContainer.appendChild(div);
                 } 
-                // 2. Active Users
+                // 2. ACTIVE USERS (Authorized)
                 else {
                     const tr = document.createElement('tr');
                     tr.className = "user-row";
                     
-                    // Style badge based on role
+                    // Badge Styling
                     let badgeColor = "bg-slate-700";
-                    if(user.role === 'Owner') badgeColor = "bg-red-600";
-                    if(user.role === 'Manager') badgeColor = "bg-blue-600";
+                    if(user.role === 'Owner') badgeColor = "bg-red-600 shadow-red-900/50 shadow-md";
+                    if(user.role === 'Manager') badgeColor = "bg-blue-600 shadow-blue-900/50 shadow-md";
+
+                    // Delete Button Logic (Only Owners can delete, and cannot delete other Owners)
+                    let actionHtml = '<span class="text-[9px] text-slate-600 font-bold uppercase">Locked</span>';
+                    
+                    if (currentUserRole === 'Owner') {
+                        if (user.role !== 'Owner') {
+                            actionHtml = `<button onclick="deleteUser(this, '${key}', '${user.name}')" class="text-red-500 hover:text-red-400 font-black text-[10px] uppercase border border-red-900/30 px-3 py-1.5 rounded-lg bg-red-900/10 hover:bg-red-900/20 transition-all">Remove</button>`;
+                        }
+                    }
 
                     tr.innerHTML = `
-                        <td class="p-4 text-white">${user.name}</td>
-                        <td class="p-4 font-mono text-slate-500">${user.email}</td>
-                        <td class="p-4"><span class="${badgeColor} text-white text-[9px] px-2 py-1 rounded font-black uppercase">${user.role}</span></td>
-                        <td class="p-4 text-right">
-                            ${(user.role !== 'Owner' && currentUserRole === 'Owner') ? 
-                            `<button onclick="deleteUser('${key}', '${user.name}')" class="text-red-500 hover:text-red-400 font-black text-[10px] uppercase border border-red-900/30 px-3 py-1 rounded-lg bg-red-900/10">Remove</button>` 
-                            : '<span class="text-[9px] text-slate-600 font-bold uppercase">Locked</span>'}
-                        </td>
+                        <td class="p-4 text-white font-bold">${user.name}</td>
+                        <td class="p-4 font-mono text-slate-500 text-[11px]">${user.email}</td>
+                        <td class="p-4"><span class="${badgeColor} text-white text-[9px] px-2 py-1 rounded font-black uppercase tracking-wider">${user.role}</span></td>
+                        <td class="p-4 text-right">${actionHtml}</td>
                     `;
                     activeContainer.appendChild(tr);
                 }
@@ -153,30 +165,46 @@
             else pendingSection.classList.add('hidden');
         }
 
-        async function updateUser(key, isAuth, role) {
-            // Pull current data first to avoid overwriting other fields
-            const res = await fetch(`${DB_URL}/${orgId}/users/${key}.json`);
-            const u = await res.json();
-            
-            // Update auth status
-            const updated = { ...u, isAuthorized: isAuth };
-            
-            await fetch(`${DB_URL}/${orgId}/users/${key}.json`, { 
-                method: 'PUT', 
-                body: JSON.stringify(updated) 
-            });
-            fetchUsers();
-        }
+        // OPTIMIZED: Uses PATCH to update only the authorization status
+        async function updateUser(btnElement, key, isAuth) {
+            // UI Feedback: Disable button and show loading
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "...";
+            btnElement.disabled = true;
 
-        async function deleteUser(key, name) {
-            if(confirm(`PERMANENT ACTION: Remove ${name} from Organization?`)) {
-                await fetch(`${DB_URL}/${orgId}/users/${key}.json`, { method: 'DELETE' });
+            try {
+                await fetch(`${DB_URL}/${orgId}/users/${key}.json`, { 
+                    method: 'PATCH', 
+                    body: JSON.stringify({ isAuthorized: isAuth }) 
+                });
+                // Refresh list
                 fetchUsers();
+            } catch (error) {
+                console.error(error);
+                alert("Update failed.");
+                btnElement.innerText = originalText;
+                btnElement.disabled = false;
             }
         }
 
+        async function deleteUser(btnElement, key, name) {
+            if(confirm(`PERMANENT ACTION:\n\nRemove ${name} from Organization?\nThey will lose access immediately.`)) {
+                // UI Feedback
+                btnElement.innerText = "...";
+                
+                try {
+                    await fetch(`${DB_URL}/${orgId}/users/${key}.json`, { method: 'DELETE' });
+                    fetchUsers();
+                } catch (error) {
+                    console.error(error);
+                    alert("Delete failed.");
+                    btnElement.innerText = "RETRY";
+                }
+            }
+        }
+
+        // Initialize
         window.onload = fetchUsers;
     </script>
 </body>
-
 </html>
