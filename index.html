@@ -184,9 +184,9 @@
             const equip = document.getElementById('description').value.toUpperCase();
             const date = document.getElementById('revisedDate').value;
             
-            // FULL CUSTOM URL LOGIC
+            // REVERTED URL LOGIC: Pointing back to GitHub Pages
             const orgId = sessionStorage.getItem("loto_org_id");
-            const scanUrl = `https://weehs.in/view.html?org=${orgId}&id=${currentID}`;
+            const scanUrl = `https://sarath200795.github.io/LOTO-Management-System/view.html?org=${orgId}&id=${currentID}`;
             const qrData = new QRious({ value: scanUrl, size: 250 }).toDataURL();
 
             const steps = [];
